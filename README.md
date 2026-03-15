@@ -1,11 +1,11 @@
 # postgresql-cli
 
-CLI for the postgresql API. Made with [api2cli.dev](https://api2cli.dev).
+CLI for managing PostgreSQL databases - register connections, run queries, inspect schemas. Made with [api2cli.dev](https://api2cli.dev).
 
 ## Install
 
 ```bash
-npx api2cli install <user>/postgresql-cli
+npx api2cli install Melvynx/postgresql-cli
 ```
 
 This clones the repo, builds the CLI, links it to your PATH, and installs the AgentSkill to your coding agents.
@@ -13,21 +13,56 @@ This clones the repo, builds the CLI, links it to your PATH, and installs the Ag
 ## Install AgentSkill only
 
 ```bash
-npx skills add <user>/postgresql-cli
+npx skills add Melvynx/postgresql-cli
 ```
 
 ## Usage
 
+### Register a database
+
 ```bash
-postgresql-cli auth set "your-token"
-postgresql-cli auth test
-postgresql-cli --help
+# With a direct connection string
+postgresql-cli database add prod "postgresql://user:pass@host:5432/mydb"
+
+# With an environment variable name (reads from env at runtime)
+postgresql-cli database add prod "DATABASE_URL"
 ```
 
-## Resources
+### Manage databases
 
-Run `postgresql-cli --help` to see available resources.
+```bash
+postgresql-cli database list
+postgresql-cli database test prod
+postgresql-cli database remove prod
+```
+
+### Run queries
+
+```bash
+postgresql-cli database query prod "SELECT * FROM users LIMIT 10"
+postgresql-cli database query prod "INSERT INTO logs (msg) VALUES ('hello')" --json
+postgresql-cli database query prod "SELECT name, email FROM users" --format csv
+```
+
+### Inspect schema
+
+```bash
+# Full schema - all tables, columns, types, constraints, indexes
+postgresql-cli database schema prod --json
+
+# List tables with row counts and sizes
+postgresql-cli database tables prod
+
+# Detailed schema for a single table
+postgresql-cli database describe prod users --json
+```
+
+## Storage
+
+Connection strings are stored in `~/.config/postgresql-cli/databases.json` (chmod 600).
 
 ## Global Flags
 
 All commands support: `--json`, `--format <text|json|csv|yaml>`, `--verbose`, `--no-color`, `--no-header`
+
+Exit codes: 0 = success, 1 = error, 2 = usage error
